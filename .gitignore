@@ -1,0 +1,23 @@
+# Dependencies
+/node_modules
+
+# Vite build output
+/dist
+
+# IDE and OS files
+.DS_Store
+.vscode/
+.idea/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# System files
+Thumbs.db
