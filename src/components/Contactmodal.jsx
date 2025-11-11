@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 
-// Simple "X" icon for closing
 const CloseIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -10,19 +9,25 @@ const CloseIcon = () => (
   </svg>
 );
 
+// Helper function to encode form data
+const encode = (data) => {
+  return Object.keys(data)
+    .map((key) => encodeURIComponent(key) + '=' + encodeURIComponent(data[key]))
+    .join('&');
+};
+
 export const ContactModal = ({ isOpen, onClose }) => {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
-  const [status, setStatus] = useState('idle'); // idle | sending | success | error
+  const [status, setStatus] = useState('idle');
 
-  // Reset form when modal is closed
   useEffect(() => {
     if (!isOpen) {
       setTimeout(() => {
         setEmail('');
         setMessage('');
         setStatus('idle');
-      }, 300); // Wait for closing animation
+      }, 300);
     }
   }, [isOpen]);
 
@@ -31,16 +36,18 @@ export const ContactModal = ({ isOpen, onClose }) => {
     setStatus('sending');
 
     try {
-      const response = await fetch('/.netlify/functions/contact', {
+      const response = await fetch('/', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, message }),
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: encode({
+          'form-name': 'contact', // This name must match the form's name
+          email,
+          message,
+        }),
       });
 
       if (!response.ok) {
-        throw new Error('Server error');
+        throw new Error('Form submission error');
       }
       
       setStatus('success');
@@ -55,21 +62,18 @@ export const ContactModal = ({ isOpen, onClose }) => {
   }
 
   return (
-    // Backdrop overlay
     <div 
       className={`fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-300 ${
         isOpen ? 'opacity-100' : 'opacity-0'
       } bg-black/60 backdrop-blur-sm`}
       onClick={onClose}
     >
-      {/* Modal Content */}
       <div
         className={`relative w-full max-w-lg p-8 m-4 transition-all duration-300 ${
           isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
         } bg-card-bg/75 backdrop-blur-lg border border-white/10 rounded-lg shadow-2xl`}
-        onClick={(e) => e.stopPropagation()} // Prevent closing on modal click
+        onClick={(e) => e.stopPropagation()}
       >
-        {/* Close Button */}
         <button 
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-400 hover:text-white"
@@ -79,7 +83,6 @@ export const ContactModal = ({ isOpen, onClose }) => {
 
         <h2 className="text-2xl font-bold text-white mb-6">Contact Me</h2>
 
-        {/* Form Area */}
         {status === 'success' ? (
           <div className="text-center">
             <h3 className="text-xl text-green-400 mb-4">Message Sent!</h3>
@@ -92,12 +95,22 @@ export const ContactModal = ({ isOpen, onClose }) => {
             </button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit}>
+          // --- 1. ADD NETLIFY ATTRIBUTES TO THE FORM ---
+          <form
+            name="contact"
+            method="POST"
+            data-netlify="true"
+            onSubmit={handleSubmit}
+          >
+            {/* This hidden input is required by Netlify */}
+            <input type="hidden" name="form-name" value="contact" />
+            
             <div className="mb-4">
               <label htmlFor="email" className="block text-gray-300 mb-2">Your Email</label>
               <input
                 type="email"
                 id="email"
+                name="email" // 'name' attribute is required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -109,6 +122,7 @@ export const ContactModal = ({ isOpen, onClose }) => {
               <label htmlFor="message" className="block text-gray-300 mb-2">Message</label>
               <textarea
                 id="message"
+                name="message" // 'name' attribute is required
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 required
