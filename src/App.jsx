@@ -1,3 +1,5 @@
+// src/App.jsx
+
 import React, { useState, useEffect } from 'react';
 import Terminal from './components/Terminal.jsx';
 import MobileFallback from './components/MobileFallback.jsx';
@@ -5,25 +7,28 @@ import MobileFallback from './components/MobileFallback.jsx';
 // Set the screen width breakpoint
 const MOBILE_BREAKPOINT = 768;
 
-function App() {
-  // State to track if we're in mobile view
-  const [isMobile, setIsMobile] = useState(
-    window.innerWidth < MOBILE_BREAKPOINT
-  );
+// Create a media query object. This is more reliable than window.innerWidth
+const mediaQuery = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`);
 
-  // This effect runs once on mount and then listens for window resizes
+function App() {
+  // Set the initial state based on whether the media query matches
+  const [isMobile, setIsMobile] = useState(mediaQuery.matches);
+
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+    // Define a listener function to update state when the screen size changes
+    const handleResize = (e) => {
+      setIsMobile(e.matches);
     };
 
-    window.addEventListener('resize', handleResize);
-    
+    // Add the listener
+    // Note: addEventListener is the modern, recommended way
+    mediaQuery.addEventListener('change', handleResize);
+
     // Cleanup the listener when the component unmounts
     return () => {
-      window.removeEventListener('resize', handleResize);
+      mediaQuery.removeEventListener('change', handleResize);
     };
-  }, []); // Empty array ensures this runs only once on mount
+  }, []); // The empty array [] ensures this effect runs only once on mount
 
   // Render the correct component based on the state
   if (isMobile) {
