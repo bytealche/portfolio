@@ -4,31 +4,27 @@ import React, { useState, useEffect } from 'react';
 import Terminal from './components/Terminal.jsx';
 import MobileFallback from './components/MobileFallback.jsx';
 
-// Set the screen width breakpoint
-const MOBILE_BREAKPOINT = 768;
-
-// Create a media query object. This is more reliable than window.innerWidth
-const mediaQuery = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`);
+// This is a new, more aggressive check.
+// It looks at the "User Agent" string of the browser.
+function detectIsMobile() {
+  const toCheck = [
+    /Android/i,
+    /webOS/i,
+    /iPhone/i,
+    /iPad/i,
+    /iPod/i,
+    /BlackBerry/i,
+    /Windows Phone/i,
+  ];
+  
+  return toCheck.some((item) => navigator.userAgent.match(item));
+}
 
 function App() {
-  // Set the initial state based on whether the media query matches
-  const [isMobile, setIsMobile] = useState(mediaQuery.matches);
+  // We only run the check once when the app loads
+  const [isMobile, setIsMobile] = useState(detectIsMobile());
 
-  useEffect(() => {
-    // Define a listener function to update state when the screen size changes
-    const handleResize = (e) => {
-      setIsMobile(e.matches);
-    };
-
-    // Add the listener
-    // Note: addEventListener is the modern, recommended way
-    mediaQuery.addEventListener('change', handleResize);
-
-    // Cleanup the listener when the component unmounts
-    return () => {
-      mediaQuery.removeEventListener('change', handleResize);
-    };
-  }, []); // The empty array [] ensures this effect runs only once on mount
+  // We don't need a resize listener anymore, as the user agent won't change.
 
   // Render the correct component based on the state
   if (isMobile) {
