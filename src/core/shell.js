@@ -92,6 +92,7 @@ export class Shell {
             this.promptState.active = false; // Cancel prompt on Ctrl+C
             this.printPrompt();
           } else {
+            // Regular 'c'
             this.currentLine += key;
             this.terminal.write(key);
           }
@@ -207,7 +208,8 @@ export class Shell {
     const message = answers[1];
 
     try {
-      const response = await fetch('/api/contact', {
+      // --- THIS IS THE CORRECTED LINE ---
+      const response = await fetch('/.netlify/functions/contact', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
