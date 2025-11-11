@@ -1,9 +1,9 @@
 // src/components/ProfileCard.jsx
 
-import React from 'react';
-import { profileData } from '../core/profileData';
+import { profileData } from '../core/profileData.js';
+import TypeWriter from '../TypeWriter.jsx';
 
-// Icon components (simple SVGs)
+// Icon components (no changes)
 const Icons = {
   linkedin: (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
@@ -16,17 +16,18 @@ const Icons = {
   ),
 };
 
-function ProfileCard() {
+const staticText = [`I'm a Data Analyst who likes`];
+const words = ['Power BI', 'FastAPI', 'React', 'Coding', 'Data-driven Solutions'];
+
+// 1. Accept 'onOpenContact' prop
+function ProfileCard({ onOpenContact }) {
   return (
-    // This is the main card container
-   <div className="w-[343px] h-full bg-card-bg/75 backdrop-blur-lg border border-white/10 text-white p-12 flex flex-col justify-center items-center flex-shrink-0 relative overflow-hidden rounded-lg shadow-2xl">
-      {/* Decorative orange circles (like the image) */}
+    <div className="w-[343px] h-full bg-card-bg/75 backdrop-blur-lg border border-white/10 text-white p-12 flex flex-col justify-center items-center flex-shrink-0 relative overflow-hidden rounded-lg shadow-2xl">
+      
       <div className="absolute -top-1/4 -left-1/4 w-72 h-72 border-[1.5rem] border-brand-orange rounded-full opacity-20 animate-pulse"></div>
       <div className="absolute -bottom-16 -right-1/4 w-96 h-96 border-[2rem] border-brand-orange rounded-full opacity-10"></div>
       
-      {/* Card Content */}
       <div className="z-10 flex flex-col items-center text-center">
-        {/* Profile Image */}
         <div className="w-48 h-48 mb-6 rounded-2xl overflow-hidden shadow-lg border-4 border-gray-700">
           <img 
             src={profileData.image} 
@@ -35,29 +36,49 @@ function ProfileCard() {
           />
         </div>
         
-        {/* Name */}
         <h1 className="text-4xl font-bold mb-2">{profileData.name}</h1>
-        
-        {/* Title */}
         <h2 className="text-xl text-gray-400 mb-6">{profileData.title}</h2>
         
-        {/* Bio */}
-        <p className="text-lg text-gray-300 mb-8">{profileData.bio}</p>
+        <div className="mb-8 h-20">
+          <TypeWriter
+            staticText={staticText}
+            words={words}
+            typeSpeed={100}
+            waitSpeed={2000}
+          />
+        </div>
         
-        {/* Social Links */}
+        {/* 2. Update the links rendering logic */}
         <div className="flex space-x-6">
-          {profileData.links.map((link) => (
-            <a
-              key={link.name}
-              href={link.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={link.name}
-              className="text-gray-400 hover:text-brand-orange transition-colors duration-200"
-            >
-              {Icons[link.icon] || link.name}
-            </a>
-          ))}
+          {profileData.links.map((link) => {
+            // Handle the 'email' icon as a button
+            if (link.icon === 'email') {
+              return (
+                <button
+                  key={link.name}
+                  onClick={onOpenContact} // 3. Attach the click handler
+                  aria-label={link.name}
+                  className="text-gray-400 hover:text-brand-orange transition-colors duration-200"
+                >
+                  {Icons[link.icon]}
+                </button>
+              );
+            }
+            
+            // Render other links as normal
+            return (
+              <a
+                key={link.name}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={link.name}
+                className="text-gray-400 hover:text-brand-orange transition-colors duration-200"
+              >
+                {Icons[link.icon] || link.name}
+              </a>
+            );
+          })}
         </div>
       </div>
     </div>

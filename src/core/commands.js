@@ -16,7 +16,6 @@ const formatLsOutput = (entry) => {
 // --- Command Definitions ---
 const commands = {
   
-  // --- UPDATED 'guide' COMMAND ---
   guide: () => ({
     output: `
 Portfolio Commands:
@@ -27,19 +26,18 @@ Portfolio Commands:
   certificates  - Lists my certifications
   resume        - Opens my resume in a new tab
   social        - Displays my social media links
-  contact       - Send me a message
   
 Utility Commands:
   guide         - Shows this guide
   ls [path]     - Lists files and directories
   cat <file>    - Displays the content of a file
   cd <dir>      - Changes the current directory
-  open <file>   - Opens a file (e.g., 'open resume.pdf')
+  open <file>   - Opens a file (e..g, 'open resume.pdf')
   clear         - Clears the terminal screen
 `,
   }),
 
-  // --- NEW COMMANDS (ALIASES) ---
+  // --- ALIASES ---
   about: () => {
     return commands.cat({ args: ['~/about.md'], currentPath: '~' });
   },
@@ -55,12 +53,11 @@ Utility Commands:
   certificates: () => {
     return commands.cat({ args: ['~/certificates.md'], currentPath: '~' });
   },
-  // --- NEW 'resume' COMMAND ---
   resume: () => {
     return commands.open({ args: ['resume.pdf'], currentPath: '~' });
   },
 
-  // --- STANDARD COMMANDS (no changes) ---
+  // --- STANDARD COMMANDS ---
   welcome: () => {
     return commands.cat({ args: ['~/welcome.txt'], currentPath: '~' });
   },
@@ -128,15 +125,14 @@ Utility Commands:
   social: () => {
     return commands.cat({ args: ['~/socials.txt'], currentPath: '~' });
   },
-  contact: () => {
-    return { prompt: 'Contact' };
-  },
   clear: () => ({
     clear: true,
   }),
   help: () => ({
     output: `Command not found: help. Did you mean 'guide'?`,
   }),
+  
+  // REMOVED 'contact' command
 };
 
 export default commands;

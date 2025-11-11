@@ -1,8 +1,9 @@
 // src/components/Terminal.jsx
 
-import React, { useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Shell } from '../core/shell.js';
 import ProfileCard from './ProfileCard.jsx';
+import ContactModal from './Contactmodal.jsx'; // 1. Import the modal
 
 // --- HEADER BAR ---
 const HeaderBar = () => (
@@ -14,7 +15,7 @@ const HeaderBar = () => (
 
 // --- TERMINAL NAV BAR ---
 const TerminalNavBar = () => (
-  <div className="flex items-center h-8 px-4 bg-terminal-header flex-shrink-0">
+  <div className="flex items-center h-8 px-4 bg-terminal-header/75 backdrop-blur-lg flex-shrink-0">
     <div className="flex space-x-2">
       <div className="w-3 h-3 bg-red-500 rounded-full"></div>
       <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
@@ -31,6 +32,9 @@ const TerminalNavBar = () => (
 function Terminal() {
   const terminalRef = useRef(null);
   const shellRef = useRef(null);
+  
+  // 2. Add state for the modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     if (terminalRef.current && !shellRef.current) {
@@ -40,7 +44,6 @@ function Terminal() {
       
       const fitTerminal = () => shell.fitAddon.fit();
       
-      // Fit on load and also on resize
       setTimeout(fitTerminal, 100);
       window.addEventListener('resize', fitTerminal);
 
@@ -51,47 +54,39 @@ function Terminal() {
   }, []);
 
   return (
-    // Root container (full screen, vertical layout)
+    // Root container
     <div className="w-screen h-screen flex flex-col bg-page-bg">
       
       {/* Row 1: The Header Bar */}
       <HeaderBar />
 
       {/* Row 2: The Main Content Area */}
-      {/* This is the responsive part:
-        - It's a vertical column by default (mobile-first).
-        - At 'md' (medium) breakpoint, it becomes a horizontal row.
-        - 'overflow-y-auto' adds scrolling on mobile if needed.
-      */}
-      <div className="flex-grow flex flex-col md:flex-row p-9 gap-40 overflow-y-auto overflow-x-hidden">
+      <div className="flex-grow flex flex-col md:flex-row p-8 gap-8 overflow-y-auto overflow-x-hidden">
         
         {/* Column 1: The Profile Card */}
-        {/* - On mobile (flex-col), it's a standard block.
-          - On desktop (md:flex-row), we make it shrinkable 
-            and set a 'max-h' to respect the vertical centering.
-        */}
-        <div className="md:flex-shrink-0 pl-20">
-          <ProfileCard />
+        <div className="md:flex-shrink-0">
+          {/* 3. Pass the "open" function to the card */}
+          <ProfileCard onOpenContact={() => setIsModalOpen(true)} />
         </div>
 
-        {/* Column 2: The Terminal (fills the remaining space) */}
-        {/* - 'min-h-[400px]' gives the terminal a minimum height on mobile.
-          - 'flex-grow' makes it fill all remaining space (horizontal on desktop, vertical on mobile).
-        */}
-        <div className="flex-grow flex flex-col rounded-lg overflow-hidden shadow-2xl min-h-[400px]">
-          
+        {/* Column 2: The Terminal */}
+        <div className="flex-grow flex flex-col rounded-lg overflow-hidden shadow-2xl min-h-[400px] border border-white/10">
           <TerminalNavBar />
-          
           <div 
             ref={terminalRef} 
             id="terminal-body"
-            className="flex-grow p-2 overflow-hidden bg-terminal-bg" 
+            className="flex-grow p-2 overflow-hidden bg-terminal-bg/75 backdrop-blur-lg" 
           >
             {/* xterm.js will attach its canvas here */}
           </div>
         </div>
       </div>
 
+      {/* 4. Render the modal (it's hidden by default) */}
+      <ContactModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+      />
     </div>
   );
 }

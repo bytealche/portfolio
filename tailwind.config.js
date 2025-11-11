@@ -7,7 +7,7 @@ export default {
  theme: {
     extend: {
       fontFamily: {
-        'mono': ['Consolas', 'Monaco', 'Courier New', 'monospace'],
+        'mono': ['"JetBrains Mono"', 'Consolas', 'Monaco', 'Courier New', 'monospace'],
       },
       colors: {
         'terminal-bg': '#222020ff',

@@ -12,8 +12,9 @@ export class Shell {
   constructor() {
     this.terminal = new Terminal({
       cursorBlink: true,
-      fontFamily: 'Consolas, "Courier New", monospace',
+      fontFamily: '"JetBrains Mono", Consolas, "Courier New", monospace',
       fontSize: 15,
+// ...
       theme: {
         background: '#1E1E1E',
         foreground: '#CECECE',
@@ -29,15 +30,6 @@ export class Shell {
     this.historyIndex = -1;
     this.currentLine = '';
     this.isWriting = false;
-
-    // --- NEW PROMPT STATE ---
-    this.promptState = {
-      active: false,
-      questions: [],
-      index: 0,
-      answers: {},
-      onComplete: null,
-    };
   }
 
   mount(element) {
@@ -63,9 +55,7 @@ export class Shell {
           this.historyIndex = -1;
           break;
         case 'Backspace':
-          let promptLength = this.promptState.active 
-            ? this.promptState.questions[this.promptState.index].length 
-            : PROMPT.replace('~', this.currentPath).length;
+          let promptLength = PROMPT.replace('~', this.currentPath).length;
 
           if (this.terminal.buffer.active.cursorX > promptLength) {
             this.currentLine = this.currentLine.slice(0, -1);
@@ -73,26 +63,20 @@ export class Shell {
           }
           break;
         case 'ArrowUp':
-          if (!this.promptState.active) {
-            domEvent.preventDefault();
-            this.navigateHistory(1);
-          }
+          domEvent.preventDefault();
+          this.navigateHistory(1);
           break;
         case 'ArrowDown':
-          if (!this.promptState.active) {
-            domEvent.preventDefault();
-            this.navigateHistory(-1);
-          }
+          domEvent.preventDefault();
+          this.navigateHistory(-1);
           break;
         case 'c':
           if (domEvent.ctrlKey) {
             this.terminal.write('^C');
             this.currentLine = '';
             this.historyIndex = -1;
-            this.promptState.active = false; // Cancel prompt on Ctrl+C
             this.printPrompt();
           } else {
-            // Regular 'c'
             this.currentLine += key;
             this.terminal.write(key);
           }
@@ -122,13 +106,6 @@ export class Shell {
    * Main input handler
    */
   handleInput(input) {
-    // --- NEW: Check if we are in a prompt ---
-    if (this.promptState.active) {
-      this.handlePromptResponse(input);
-      return;
-    }
-    // --- End new ---
-
     const trimmedInput = input.trim();
     if (trimmedInput.length === 0) {
       this.printPrompt();
@@ -153,13 +130,7 @@ export class Shell {
         this.currentPath = result.newPath;
       }
       
-      // --- NEW: Check for prompt ---
-      if (result.prompt === 'contact') {
-        this.startContactPrompt();
-      } 
-      // --- End new ---
-      
-      else if (commandName !== 'clear' && !result.prompt) {
+      if (commandName !== 'clear') {
         this.printPrompt();
       }
     };
@@ -171,64 +142,6 @@ export class Shell {
       onWriteComplete();
     }
   }
-
-  // --- NEW: Handles interactive prompt for 'contact' ---
-  startContactPrompt() {
-    this.promptState = {
-      active: true,
-      questions: ['Your Email: ', 'Your Message: '],
-      index: 0,
-      answers: {},
-      onComplete: (answers) => this.sendContactEmail(answers),
-    };
-    this.printPrompt(this.promptState.questions[0]);
-  }
-
-  handlePromptResponse(input) {
-    const { questions, index } = this.promptState;
-    this.promptState.answers[index] = input;
-    const newIndex = index + 1;
-
-    if (newIndex < questions.length) {
-      // Ask next question
-      this.promptState.index = newIndex;
-      this.printPrompt(questions[newIndex]);
-    } else {
-      // All questions answered
-      this.isWriting = true;
-      this.writeOutput("Sending message...", () => {
-        this.promptState.onComplete(this.promptState.answers);
-        this.promptState = { active: false, questions: [], index: 0, answers: {}, onComplete: null };
-      });
-    }
-  }
-
-  async sendContactEmail(answers) {
-    const email = answers[0];
-    const message = answers[1];
-
-    try {
-      // --- THIS IS THE CORRECTED LINE ---
-      const response = await fetch('/.netlify/functions/contact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, message }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Server error');
-      }
-
-      const data = await response.json();
-      this.writeOutput("Message sent successfully!", () => this.printPrompt());
-
-    } catch (error) {
-      this.writeOutput("Error: Failed to send message.", () => this.printPrompt());
-    }
-  }
-  // --- End new functions ---
 
   writeOutput(outputString, onCompleteCallback, speed = TYPE_SPEED) {
     const processedOutput = outputString.replace(/\n/g, '\r\n');
@@ -249,7 +162,6 @@ export class Shell {
   }
 
   navigateHistory(direction) {
-    // ... (rest of the function is unchanged)
     if (this.historyIndex === -1 && direction === -1) return;
     this.historyIndex += direction;
     if (this.historyIndex < 0) {
@@ -269,7 +181,6 @@ export class Shell {
   }
   
   clearLine() {
-    // ... (rest of the function is unchanged)
     const promptLength = PROMPT.replace('~', this.currentPath).length;
     const currentLength = this.currentLine.length;
     const backspaces = '\b \b'.repeat(currentLength);

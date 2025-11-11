@@ -1,3 +1,5 @@
+// src/components/TypeWriter.jsx
+
 import React, { useState, useEffect } from 'react';
 
 // Default props for reusability

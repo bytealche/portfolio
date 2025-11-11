@@ -18,7 +18,7 @@ export const profileData = {
     },
     {
       name: "Email",
-      url: "mailto:bytealche@gmail.com",
+      url: "#contact", // Placeholder URL
       icon: "email",
     },
   ],
